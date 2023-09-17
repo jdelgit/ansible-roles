@@ -1,0 +1,86 @@
+---
+# https://kubernetes.io/docs/setup/production-environment/container-runtimes/
+# Prerequisits
+- name: Add required modules
+  ansible.builtin.copy:
+    src: modules-k8s.conf
+    dest: '/etc/modules-load.d/k8s.conf'
+    mode: '0664'
+    owner: root
+    group: root
+
+- name: Add the overlay and br_netfilter module
+  community.general.modprobe:
+    name: ["overlay", "br_netfilter"]
+    state: present
+
+- name: Set sysctl params
+  ansible.builtin.copy:
+    src: sysctl-k8s.conf
+    dest: '/etc/sysctl.d/k8s.conf'
+    mode: '0664'
+    owner: root
+    group: root
+  register: result
+
+- name: Update sysctl settings
+  ansible.builtin.shell: sysctl -p --system
+  when: result.changed
+# Containerd
+- name: Download containerd
+  ansible.builtin.get_url:
+    url: "{{ containerd_download_url }}"
+    dest: /tmp/{{ containerd_dest_file }}
+    mode: '0440'
+
+- name: Extract containerd into /usr/local
+  ansible.builtin.unarchive:
+    src: /tmp/{{ containerd_dest_file }}
+    dest: /usr/local
+
+- name: Enable Containerd
+  ansible.builtin.systemd:
+    name: containerd
+    state: started
+    enabled: true
+
+- name: Create default config.tml
+  ansible.builtin.shell: containerd config default > /etc/containerd/config.toml
+
+- name: Replace old hostname with new hostname (requires Ansible >= 2.4)
+  ansible.builtin.replace:
+    path: /etc/containerd/config.toml
+    regexp: '            SystemdCgroup = false'
+    replace: '            SystemdCgroup = true'
+
+- name: Restart Containerd
+  ansible.builtin.systemd:
+    name: containerd
+    state: restarted
+
+# Runc
+- name: Download runc
+  ansible.builtin.get_url:
+    url: "{{ runc_download_url }}"
+    dest: /usr/local/sbin/runc
+    mode: '0755'
+
+# CNI Plugins
+- name: Create cni directory
+  ansible.builtin.file:
+    path: /opt/cni/bin
+    state: directory
+    mode: '0555'
+
+- name: Download cni plugins
+  ansible.builtin.get_url:
+    url: "{{ containernet_plugins_download_url }}"
+    dest: /tmp/{{ containernet_plugins_dest_file }}
+    mode: '0440'
+
+
+- name: Extract cni plugins into /opt/cni/bin
+  ansible.builtin.unarchive:
+    src: /tmp/{{ containernet_plugins_dest_file }}
+    dest: /opt/cni/bin
+    mode: '0440'

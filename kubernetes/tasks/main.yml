@@ -1,0 +1,9 @@
+---
+- name: Install Containerd
+  ansible.builtin.include_tasks: containerd.yml
+
+- name: Install Kubernetes
+  ansible.builtin.include_tasks: kubernetes.yml
+
+- name: Initialize Kubernetes cluster
+  ansible.builtin.include_tasks: init-cluster.yml

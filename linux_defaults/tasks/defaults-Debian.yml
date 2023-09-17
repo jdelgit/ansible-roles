@@ -1,0 +1,34 @@
+---
+- name: Run the equivalent of "apt-get update"
+  ansible.builtin.apt:
+    update_cache: true
+
+- name: Install common packages
+  ansible.builtin.package:
+    name: "{{ common_development_support_packages }}"
+    state: present
+
+- name: Remove default apt entry
+  ansible.builtin.apt_repository:
+    repo: "deb http://deb.debian.org/debian stable main"
+    state: absent
+  when: ansible_distribution == 'Debian'
+
+- name: Add contrib , non-free apt entry
+  ansible.builtin.apt_repository:
+    repo: "deb http://deb.debian.org/debian stable main contrib non-free"
+    state: present
+  when: ansible_distribution == 'Debian'
+
+
+- name: Install Role packages
+  ansible.builtin.apt:
+    name: "{{ debian_role_packages }}"
+    state: present
+    force_apt_get: '{{ debian_force_apt_get }}'
+  when: ansible_distribution == 'Debian'
+
+- name: Upgrade Installed system packages
+  ansible.builtin.apt:
+    upgrade: safe
+  when: debian_apt_package_upgrade

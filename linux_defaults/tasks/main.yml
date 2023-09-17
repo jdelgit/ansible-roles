@@ -1,0 +1,9 @@
+---
+- name: Set timezone to "{{ default_timezone }}"
+  community.general.timezone:
+    name: "{{ default_timezone }}"
+  when: linux_defaults_install
+
+- name: Include OS  Tasks
+  ansible.builtin.include_tasks: "defaults-{{ ansible_os_family }}.yml"
+  when: linux_defaults_install

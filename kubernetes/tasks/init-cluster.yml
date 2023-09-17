@@ -1,0 +1,20 @@
+---
+- name: Initialize cluster
+  ansible.builtin.shell:
+    cmd: kubeadm init --pod-network-cidr=10.244.0.0/16 --feature-gates CoreDNS=true
+
+- name: Get flannel file
+  ansible.builtin.get_url:
+    url: https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+    dest: /tmp/kube-flannel.yml
+    mode: '0440'
+
+- name: Apply Flannel to kubectl
+  ansible.builtin.command:
+    cmd: kubectl apply -f /tmp/kube-flannel.yml
+
+
+- name: Disable masternode taint
+  ansible.builtin.shell: |
+    kubectl --kubeconfig=/etc/kubernetes/admin.conf taint nodes --all node-role.kubernetes.io/control-plane-
+  when: single_node_cluster

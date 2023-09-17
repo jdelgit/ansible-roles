@@ -1,0 +1,18 @@
+linux_defaults_install: false
+
+default_timezone: Europe/Amsterdam
+
+common_development_support_packages:
+  - vim
+  - net-tools
+  - curl
+  - gpg
+
+debian_role_packages:
+  - apt-utils
+  - apt-transport-https
+  - ca-certificates
+  - python3-pip
+  - python3-setuptools
+  - telnet
+  - mlocate
