@@ -1,0 +1,12 @@
+---
+- name: Nginx | Ensure nginx is removed.
+  ansible.builtin.package:
+    name: "{{ nginx_package_name }}"
+    state: absent
+
+- name: Nginx | Ensure repo is absent
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  with_items:
+    - "{{ nginx_repo_file }}"

@@ -1,0 +1,14 @@
+trigger:
+  branches:
+    include:
+      - '*'
+
+pool: Default
+
+stages:
+  - stage: Validate
+    jobs:
+      - job: linter_validation
+        steps:
+          - script: |
+              ansible-lint -v

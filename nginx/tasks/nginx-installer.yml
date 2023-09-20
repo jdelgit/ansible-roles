@@ -1,0 +1,35 @@
+---
+- name: Nginx {{ nginx_version }} | Enable nginx repo.
+  ansible.builtin.template:
+    src: nginx.repo.j2
+    dest: "{{ nginx_repo_file }}"
+    owner: root
+    group: root
+    mode: "0644"
+  when: nginx_yum_repo_enabled | bool
+
+- name: Nginx {{ nginx_version }} | Ensure nginx is installed.
+  ansible.builtin.package:
+    name: "{{ nginx_package_name }}-{{ nginx_version }}"
+    state: present
+
+# Vhost configuration.
+- name: Configure VHost
+  ansible.builtin.import_tasks: vhosts.yml
+
+# Nginx setup.
+- name: Nginx {{ nginx_version }} | Copy nginx configuration in place.
+  ansible.builtin.template:
+    src: "{{ nginx_conf_template }}"
+    dest: "{{ nginx_conf_file_path }}"
+    owner: root
+    group: root
+    mode: "0644"
+  notify:
+    - Reload nginx
+
+- name: Nginx {{ nginx_version }} | Ensure nginx service is running as configured.
+  ansible.builtin.systemd:
+    name: nginx
+    state: "{{ nginx_service_state }}"
+    enabled: "{{ nginx_service_enabled }}"

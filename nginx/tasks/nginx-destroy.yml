@@ -1,0 +1,21 @@
+---
+- name: Nginx | Ensure repo is absent
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  with_items:
+    - "{{ nginx_repo_file }}"
+    - "{{ nginx_conf_file_path }}"
+    - "{{ nginx_log_directory }}"
+    - /etc/nginx
+
+- name: Nginx COMPLETE REMOVAL | Ensure nginx user is absent
+  ansible.builtin.user:
+    name: "{{ nginx_user }}"
+    state: absent
+    remove: true
+
+- name: Nginx COMPLETE REMOVAL | Ensure nginx user group is absent
+  ansible.builtin.group:
+    name: "{{ nginx_group }}"
+    state: absent

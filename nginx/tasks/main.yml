@@ -1,0 +1,16 @@
+---
+- name: Nginx | Ensure version "{{ nginx_version }}" is installed
+  ansible.builtin.include_tasks: nginx-installer.yml
+  when:
+    - nginx_install
+    - not nginx_removal
+    - not nginx_complete_removal
+
+- name: Nginx | Removal
+  ansible.builtin.include_tasks: nginx-removal.yml
+  when: nginx_removal or
+    nginx_complete_removal
+
+- name: Nginx | COMPLETE Removal
+  ansible.builtin.include_tasks: nginx-destroy.yml
+  when: nginx_complete_removal
